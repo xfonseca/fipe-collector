@@ -1,0 +1,16 @@
+FROM python:3.6
+
+ENV PYTHONUNBUFFERED 0
+
+ADD . /app
+WORKDIR /app
+
+COPY ./docker/requirements.txt ./app/requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r ./app/requirements.txt
+
+ENV FLASK_ENV production
+
+EXPOSE 6002
+
+CMD python app/app.py
