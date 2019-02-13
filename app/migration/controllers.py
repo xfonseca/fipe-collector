@@ -13,7 +13,7 @@ migration = Blueprint("migration", __name__)
 #
 # Creates a coefficient table
 #
-@migration.route("/table-create/", methods=["GET"])
+@migration.route("/table-create", methods=["GET"])
 def tableCreate():
     try: 
         # Connection

@@ -1,6 +1,7 @@
 import os
 from flask import Flask, Response, json
 from migration.controllers import migration
+from collect.controllers import collect
 import logging
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -18,8 +19,9 @@ sentry_sdk.init(
     integrations=[FlaskIntegration()]
 )
 
-# MODULE MIGRATION
+# MODULES
 app.register_blueprint(migration, url_prefix="/migration")
+app.register_blueprint(collect, url_prefix="/collect")
 
 # Handling 403
 @app.errorhandler(403)
