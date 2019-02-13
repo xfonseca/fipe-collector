@@ -5,28 +5,35 @@ from decimal import Decimal
 from pytz import timezone
 import logging
 import os, string, re, sys, decimal
-import mysql.connector
 import requests
 import time
-
+import mysql.connector
 
 # MODULE COLLECT
 collect = Blueprint("collect", __name__)
 
-#
-# Collect "marca"
-#
-@collect.route("/marca", methods=["GET"])
-def marca():
-    try: 
+# DECORATOR
+def customMiddleware(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
         # MySQL Connection
-        mydb = mysql.connector.connect(
+        g.mydb = mysql.connector.connect(
             host=os.environ["MYSQL_HOST"],
             user=os.environ["MYSQL_USER"],
             passwd=os.environ["MYSQL_PASSWORD"],
             database=os.environ["MYSQL_DATABASE"],
         )
-        mycursor = mydb.cursor()
+        return f(*args, **kwargs)
+    return wrap
+
+#
+# Collect "marca"
+#
+@collect.route("/marca", methods=["GET"])
+@customMiddleware
+def marca():
+    try: 
+        mycursor = g.mydb.cursor()
 
         # Get data
         r = requests.get("http://fipeapi.appspot.com/api/1/carros/marcas.json")
@@ -42,7 +49,7 @@ def marca():
 
         # Execute insert
         mycursor.executemany(sqlInsert, sqlInsertItems)
-        mydb.commit()
+        g.mydb.commit()
 
         # Return data
         insertedRows = str(mycursor.rowcount)
@@ -60,21 +67,14 @@ def marca():
 # Collect "carro"
 #
 @collect.route("/carro", methods=["GET"])
+@customMiddleware
 def carro():
     try: 
-        # MySQL Connection
-        mydb = mysql.connector.connect(
-            host=os.environ["MYSQL_HOST"],
-            user=os.environ["MYSQL_USER"],
-            passwd=os.environ["MYSQL_PASSWORD"],
-            database=os.environ["MYSQL_DATABASE"],
-        )
-
         # Variable to store collected data
         collectedMarcas = []
 
         # Get stored "marca" in database to search "carro" of each one
-        cursosSelectMarca = mydb.cursor()
+        cursosSelectMarca = g.mydb.cursor()
         cursosSelectMarca.execute("SELECT id, nome FROM api_marca WHERE status = 0")
         myresult = cursosSelectMarca.fetchall()
         
@@ -109,7 +109,7 @@ def carro():
                 sqlInsertItems.append((carro["id"], carro["fipe_name"], marcaId, 0))
 
             # Execute insert
-            cursosInsertCarro = mydb.cursor()
+            cursosInsertCarro = g.mydb.cursor()
             cursosInsertCarro.executemany(sqlInsert, sqlInsertItems)
 
             if (cursosInsertCarro.rowcount > 0):
@@ -117,9 +117,9 @@ def carro():
                 collectedMarcas.append(marcaName)
 
                 # Save status
-                cursosUpdateMarca = mydb.cursor()
+                cursosUpdateMarca = g.mydb.cursor()
                 cursosUpdateMarca.execute("UPDATE api_marca SET `status` = 1 WHERE id = {}".format(marcaId))
-                mydb.commit()
+                g.mydb.commit()
 
         # Return data
         returnData = json.dumps({"message": "Collected \"marca\" at data property", "data": collectedMarcas})
@@ -128,18 +128,10 @@ def carro():
         # Log
         logging.error("An exception happened", exc_info=True)
 
-        # MySQL Connection
-        mydb = mysql.connector.connect(
-            host=os.environ["MYSQL_HOST"],
-            user=os.environ["MYSQL_USER"],
-            passwd=os.environ["MYSQL_PASSWORD"],
-            database=os.environ["MYSQL_DATABASE"],
-        )
-
         # Delete uncompleted "marca"
-        cursosDeleteUncompletedMarca = mydb.cursor()
+        cursosDeleteUncompletedMarca = g.mydb.cursor()
         cursosDeleteUncompletedMarca.execute("DELETE FROM api_carro WHERE marca_id IN (SELECT id FROM api_marca WHERE status = 0)")
-        mydb.commit()
+        g.mydb.commit()
 
         # Return data
         returnData = json.dumps({ "data": None, "message": "Something went wrong!" })

@@ -10,20 +10,29 @@ import mysql.connector
 # MODULE MIGRATION
 migration = Blueprint("migration", __name__)
 
-#
-# Creates a coefficient table
-#
-@migration.route("/table-create", methods=["GET"])
-def tableCreate():
-    try: 
-        # Connection
-        mydb = mysql.connector.connect(
+# DECORATOR
+def customMiddleware(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        # MySQL Connection
+        g.mydb = mysql.connector.connect(
             host=os.environ["MYSQL_HOST"],
             user=os.environ["MYSQL_USER"],
             passwd=os.environ["MYSQL_PASSWORD"],
             database=os.environ["MYSQL_DATABASE"],
         )
-        mycursor = mydb.cursor()
+        return f(*args, **kwargs)
+    return wrap
+
+#
+# Creates a coefficient table
+#
+@migration.route("/table-create", methods=["GET"])
+@customMiddleware
+def tableCreate():
+    try: 
+        # Connection
+        mycursor = g.mydb.cursor()
 
         # Drop tables if exists
         mycursor.execute("SET FOREIGN_KEY_CHECKS = 0")

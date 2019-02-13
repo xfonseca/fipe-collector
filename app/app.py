@@ -1,11 +1,11 @@
-import os
 from flask import Flask, Response, json
 from migration.controllers import migration
 from collect.controllers import collect
-import logging
-import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+import os
+import logging
+import sentry_sdk
 
 app = Flask(__name__)
 
