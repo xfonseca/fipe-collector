@@ -13,6 +13,11 @@ services:
       APP_DEBUG: "True"
       APP_HOST: "0.0.0.0"
       APP_PORT: "6002"
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: q1w2e3r4
+      SENTRY_DSN: "https://054e033a6540492099dcd8ee5e8e339a@sentry.io/1392860"
     networks:
       - all
 

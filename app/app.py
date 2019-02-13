@@ -14,7 +14,7 @@ sentry_logging = LoggingIntegration(
     event_level=logging.ERROR  # Send errors as events
 )
 sentry_sdk.init(
-    dsn="https://054e033a6540492099dcd8ee5e8e339a@sentry.io/1392860",
+    dsn=os.environ["SENTRY_DSN"],
     integrations=[FlaskIntegration()]
 )
 
