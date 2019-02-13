@@ -43,7 +43,7 @@ def tableCreate():
         # Create tables
         mycursor.execute("CREATE TABLE api_marca (id INT(11) NOT NULL, nome VARCHAR(255) NOT NULL, status TINYINT(1) DEFAULT 0 NOT NULL, PRIMARY KEY (id))")
         mycursor.execute("CREATE TABLE api_carro (id INT(11) NOT NULL, nome VARCHAR(500) NOT NULL, marca_id INT(11) NOT NULL, status TINYINT(1) DEFAULT 0 NOT NULL, PRIMARY KEY (id), CONSTRAINT `fk_carro_marca` FOREIGN KEY (marca_id) REFERENCES api_marca(id))")
-        mycursor.execute("CREATE TABLE api_detalhe (id INT(11) NOT NULL, ano INT(4) DEFAULT NULL, fipe VARCHAR(20) DEFAULT NULL, preco NUMERIC DEFAULT NULL, carro_id INT(11) NOT NULL, status_ano TINYINT(1) DEFAULT 0 NOT NULL, status_detalhe TINYINT(1) DEFAULT 0 NOT NULL, CONSTRAINT `fk_detalhe_carro` FOREIGN KEY (carro_id) REFERENCES api_carro(id))")
+        mycursor.execute("CREATE TABLE api_detalhe (id VARCHAR(50) NOT NULL, ano INT(4) DEFAULT NULL, fipe VARCHAR(20) DEFAULT NULL, preco NUMERIC DEFAULT NULL, carro_id INT(11) NOT NULL, CONSTRAINT `fk_detalhe_carro` FOREIGN KEY (carro_id) REFERENCES api_carro(id))")
 
         # Return data
         returnData = json.dumps({ "data": None, "message": "The tables has been successfully created!" })

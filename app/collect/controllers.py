@@ -85,7 +85,6 @@ def carro():
 
             # Get data
             r = requests.get("http://fipeapi.appspot.com/api/1/carros/veiculos/{}.json".format(marcaId))
-            carros = r.json()
 
             # Check if the request limit has been exceeded
             if (r.status_code == 403):
@@ -98,7 +97,8 @@ def carro():
                 # Try again
                 r = requests.get("http://fipeapi.appspot.com/api/1/carros/veiculos/{}.json".format(marcaId))
                 carros = r.json()
-
+            else:
+                carros = r.json()
 
             # Sql insert
             sqlInsert = "INSERT INTO api_carro (id, nome, marca_id, status) VALUES (%s, %s, %s, %s)"
@@ -122,7 +122,7 @@ def carro():
                 g.mydb.commit()
 
         # Return data
-        returnData = json.dumps({"message": "Collected \"marca\" at data property", "data": collectedMarcas})
+        returnData = json.dumps({"message": "Collected \"carro\" at data property", "data": collectedMarcas})
         return Response(returnData, status=200, mimetype="application/json")
     except Exception as e:  
         # Log
@@ -131,6 +131,122 @@ def carro():
         # Delete uncompleted "marca"
         cursosDeleteUncompletedMarca = g.mydb.cursor()
         cursosDeleteUncompletedMarca.execute("DELETE FROM api_carro WHERE marca_id IN (SELECT id FROM api_marca WHERE status = 0)")
+        g.mydb.commit()
+
+        # Return data
+        returnData = json.dumps({ "data": None, "message": "Something went wrong!" })
+        return Response(returnData, status=500, mimetype="application/json")
+
+#
+# Collect "carro"
+#
+@collect.route("/detalhe", methods=["GET"])
+@customMiddleware
+def detalhe():
+    try: 
+        # Variable to store collected data
+        collectedCarros = []
+
+        # Get stored "carro" in database to search "ano" of each one
+        cursosSelectCarro = g.mydb.cursor()
+        cursosSelectCarro.execute("SELECT id, nome, marca_id FROM api_carro WHERE status = 0")
+        myresult = cursosSelectCarro.fetchall()
+        
+        # Interate each "carro" to get its "ano"
+        for carro in myresult:
+            carroId = carro[0]
+            carroName = carro[1]
+            marcaId = carro[2]
+
+            # Get data
+            r = requests.get("http://fipeapi.appspot.com/api/1/carros/veiculo/{}/{}.json".format(marcaId, carroId))
+
+            # Check if the request limit has been exceeded
+            if (r.status_code == 403):
+                print("--- REQUESTS LIMIT EXCEEDED ---")
+
+                # sleep 1 minute to start again
+                time.sleep( 61 )
+                print("--- I'M BACK ---")
+
+                # Try again
+                r = requests.get("http://fipeapi.appspot.com/api/1/carros/veiculo/{}/{}.json".format(marcaId, carroId))
+                anos = r.json()
+            else:
+                anos = r.json()
+
+            # Sql insert
+            sqlInsert = "INSERT INTO api_detalhe (id, carro_id, ano, fipe, preco) VALUES (%s, %s, %s, %s, %s)"
+            sqlInsertItems = []
+
+            # Iterate returned data to add "detail" to sql insert
+            for ano in anos:
+                # Collect detail
+                r = requests.get("http://fipeapi.appspot.com/api/1/carros/veiculo/{}/{}/{}.json".format(marcaId, carroId, ano["id"]))
+
+                if (r.status_code == 200):
+                    detail = r.json()
+
+                    # Treat price
+                    preco = detail["preco"]
+                    preco = preco.replace("R$ ", "")
+                    preco = preco.replace(".", "")
+                    preco = preco.replace(",", ".")
+
+                    # Append to insert items
+                    sqlInsertItems.append((ano["id"], carroId, detail["ano_modelo"], detail["fipe_codigo"], preco))
+                    
+                elif (r.status_code == 403):
+                    print("--- REQUESTS LIMIT EXCEEDED ---")
+
+                    # sleep 1 minute to start again
+                    time.sleep( 61 )
+                    print("--- I'M BACK ---")
+
+                    # Try again
+                    r = requests.get("http://fipeapi.appspot.com/api/1/carros/veiculo/{}/{}/{}.json".format(marcaId, carroId, ano["id"]))
+
+                    if (r.status_code == 200):
+                        detail = r.json()
+
+                        # Treat price
+                        preco = detail["preco"]
+                        preco = preco.replace("R$ ", "")
+                        preco = preco.replace(".", "")
+                        preco = preco.replace(",", ".")
+
+                        # Append to insert items
+                        sqlInsertItems.append((ano["id"], carroId, detail["ano_modelo"], detail["fipe_codigo"], None))
+                    else:
+                        # Append to insert items
+                        sqlInsertItems.append((ano["id"], carroId, None, None, None))
+                else: 
+                    # Append to insert items
+                    sqlInsertItems.append((ano["id"], carroId, None, None, None))
+
+            # Execute insert
+            cursosInsertAno = g.mydb.cursor()
+            cursosInsertAno.executemany(sqlInsert, sqlInsertItems)
+
+            if (cursosInsertAno.rowcount > 0):
+                # Append to collected "maca"
+                collectedCarros.append(carroName)
+
+                # Save status
+                cursosUpdateCarro = g.mydb.cursor()
+                cursosUpdateCarro.execute("UPDATE api_carro SET `status` = 1 WHERE id = {}".format(carroId))
+                g.mydb.commit()
+
+        # Return data
+        returnData = json.dumps({"message": "Collected \"ano\" at data property", "data": collectedCarros})
+        return Response(returnData, status=200, mimetype="application/json")
+    except Exception as e:  
+        # Log
+        logging.error("An exception happened", exc_info=True)
+
+        # Delete uncompleted "marca"
+        cursosDeleteUncompletedMarca = g.mydb.cursor()
+        cursosDeleteUncompletedMarca.execute("DELETE FROM api_detalhe WHERE carro_id IN (SELECT id FROM api_carro WHERE status = 0)")
         g.mydb.commit()
 
         # Return data
