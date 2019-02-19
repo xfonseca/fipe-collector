@@ -2,6 +2,7 @@ from flask import Flask, Response, json
 from migration.controllers import migration
 from collect.controllers import collect
 from status.controllers import status
+from dumping.controllers import dumping
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 import os
@@ -24,6 +25,7 @@ sentry_sdk.init(
 app.register_blueprint(migration, url_prefix="/migration")
 app.register_blueprint(collect, url_prefix="/collect")
 app.register_blueprint(status, url_prefix="/status")
+app.register_blueprint(dumping, url_prefix="/dumping")
 
 # Handling 403
 @app.errorhandler(403)

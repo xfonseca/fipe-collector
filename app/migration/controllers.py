@@ -39,11 +39,15 @@ def tableCreate():
         mycursor.execute("DROP TABLE IF EXISTS api_marca")
         mycursor.execute("DROP TABLE IF EXISTS api_carro")
         mycursor.execute("DROP TABLE IF EXISTS api_detalhe")
+        # mycursor.execute("DROP TABLE IF EXISTS proces_aux")
+        # mycursor.execute("DROP TABLE IF EXISTS proces_carro")
 
         # Create tables
         mycursor.execute("CREATE TABLE api_marca (id INT(11) NOT NULL, nome VARCHAR(255) NOT NULL, status TINYINT(1) DEFAULT 0 NOT NULL, PRIMARY KEY (id))")
         mycursor.execute("CREATE TABLE api_carro (id INT(11) NOT NULL, nome VARCHAR(500) NOT NULL, marca_id INT(11) NOT NULL, status TINYINT(1) DEFAULT 0 NOT NULL, PRIMARY KEY (id), CONSTRAINT `fk_carro_marca` FOREIGN KEY (marca_id) REFERENCES api_marca(id))")
         mycursor.execute("CREATE TABLE api_detalhe (id VARCHAR(50) NOT NULL, ano INT(4) DEFAULT NULL, fipe VARCHAR(20) DEFAULT NULL, preco NUMERIC DEFAULT NULL, carro_id INT(11) NOT NULL, CONSTRAINT `fk_detalhe_carro` FOREIGN KEY (carro_id) REFERENCES api_carro(id))")
+        # mycursor.execute("CREATE TABLE proces_aux (id INT(11) NOT NULL AUTO_INCREMENT, `key` VARCHAR(100) NOT NULL, value1 VARCHAR(500) NOT NULL, value2 VARCHAR(500), PRIMARY KEY (id))")
+        # mycursor.execute("CREATE TABLE proces_carro (id INT(11) NOT NULL, original_marca VARCHAR(255) NOT NULL, original_carro VARCHAR(500) NOT NULL, proces_marca VARCHAR(255) NOT NULL, proces_modelo VARCHAR(255) NOT NULL, proces_versao VARCHAR(255) NOT NULL, PRIMARY KEY (id))")
 
         # Return data
         returnData = json.dumps({ "data": None, "message": "The tables has been successfully created!" })
