@@ -5,11 +5,13 @@ from status.controllers import status
 from dumping.controllers import dumping
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from flask_cors import CORS
 import os
 import logging
 import sentry_sdk
 
 app = Flask(__name__)
+CORS(app)
 
 # Sentry
 sentry_logging = LoggingIntegration(
