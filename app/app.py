@@ -1,4 +1,4 @@
-from flask import Flask, Response, json
+from flask import Flask, Response, json, Blueprint, render_template
 from migration.controllers import migration
 from collect.controllers import collect
 from status.controllers import status
@@ -10,7 +10,7 @@ import os
 import logging
 import sentry_sdk
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='web')
 CORS(app)
 
 # Sentry
@@ -23,11 +23,17 @@ sentry_sdk.init(
     integrations=[FlaskIntegration()]
 )
 
+# WEB
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+
 # MODULES
-app.register_blueprint(migration, url_prefix="/migration")
-app.register_blueprint(collect, url_prefix="/collect")
-app.register_blueprint(status, url_prefix="/status")
-app.register_blueprint(dumping, url_prefix="/dumping")
+app.register_blueprint(migration, url_prefix="/api/migration")
+app.register_blueprint(collect, url_prefix="/api/collect")
+app.register_blueprint(status, url_prefix="/api/status")
+app.register_blueprint(dumping, url_prefix="/api/dumping")
 
 # Handling 403
 @app.errorhandler(403)

@@ -57,8 +57,8 @@ def dbmysql():
             stringDump += "(" + carroId + ", '" + carroMarca  + "', '" + carroModelo + "'),"
 
         # Return data
-        returnData = json.dumps({ "data": stringDump, "message": "Status data are at data property" })
-        return Response(returnData, status=200, mimetype="application/json")
+        # returnData = json.dumps({ "data": stringDump, "message": "Status data are at data property" })
+        return Response(stringDump, status=200, mimetype="application/json")
     except Exception as e:  
         # log
         logging.error("An exception happened", exc_info=True)

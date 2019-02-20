@@ -52,19 +52,19 @@ def collect():
             statusMarca.append({
                 "marca_id": str(marca[0]),
                 "marca_nome": str(marca[1]),
-                "status_carro": int(marca[2]),
-                "status_detalhe": int(marca[3])
+                "status_carro": int(marca[2]) if marca[2] else 0,
+                "status_detalhe": int(marca[3]) if marca[3] else 0
             })
 
             # To calculate general status
             counter += 1
-            sumStatusCarro += int(marca[2])
-            sumStatusDetalhe += int(marca[3])
+            sumStatusCarro += int(marca[2]) if marca[2] else 0
+            sumStatusDetalhe += int(marca[3]) if marca[3] else 0
 
         # General status
         statusGeral = {
-            "carro": round(sumStatusCarro / counter),
-            "detalhe": round(sumStatusDetalhe / counter)
+            "carro": round(sumStatusCarro / counter) if statusMarca else 0,
+            "detalhe": round(sumStatusDetalhe / counter) if statusMarca else 0,
         }
 
         status = {
