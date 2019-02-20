@@ -1,9 +1,9 @@
 <template>
   <div id="collect-buttons">
     <button :disabled="statusDatabase" v-bind:class="{ done: statusDatabase }" @click="startDatabase($event)">Start database</button>
-    <button :disabled="!statusDatabase"  v-bind:class="{ done: statusMarca }" @click="collectMarca($event)">Collect "Marca"</button>
-    <button :disabled="!statusMarca" v-bind:class="{ done: statusCarro }" @click="collectCarro($event)">Collect "Carro"</button>
-    <button :disabled="!statusCarro" v-bind:class="{ done: statusDetalhe }" @click="collectDetalhe($event)">Collect "Detalhe"</button>
+    <button :disabled="!statusDatabase"  v-bind:class="{ done: statusMarca }" @click="collect($event, 'marca')">Collect "Marca"</button>
+    <button :disabled="!statusMarca" v-bind:class="{ done: statusCarro }" @click="collect($event, 'carro')">Collect "Carro"</button>
+    <button :disabled="!statusCarro" v-bind:class="{ done: statusDetalhe }" @click="collect($event, 'detalhe')">Collect "Detalhe"</button>
     <button :disabled="!statusCarro" @click="copySqlToClipboard()">Copy SQL to clipboard</button>
     <br><br><hr>
   </div>
@@ -24,13 +24,14 @@ export default {
     }
   },
   methods: {
+    // starts the database like a migration
     startDatabase(event) {
       // disable button
       event.target.disabled = true;
 
       // request 
       axios
-      .get('http://0.0.0.0:7002/migration/table-create')
+      .get(process.env.APP_URL + '/migration/table-create')
       .then(() => {
         // enable next collect button
         this.statusDatabase = true;
@@ -44,42 +45,28 @@ export default {
         EventBus.$emit('collect-stop');
       })
     },
-    collectMarca(event) {
+
+    // collect data
+    collect(event, what) {
       // disable button
       event.target.disabled = true;
 
-      // request 
-      axios
-      .get('http://0.0.0.0:7002/collect/marca')
-      .then(() => {
-        // enable next collect button
-        this.statusMarca = true;
-        // inform start collecting
-        EventBus.$emit('collect-start');
-        // inform stop collecting
-        EventBus.$emit('collect-stop');
-      })
-      .catch(e => {
-        // alert error
-        alert(e)
-        // enable button
-        event.target.disabled = false;
-        // inform stop collecting
-        EventBus.$emit('collect-stop');
-      })
-    },
-    collectCarro(event) {
-      // disable button
-      event.target.disabled = true;
       // inform start collecting
       EventBus.$emit('collect-start');
-
+      
       // request 
       axios
-      .get('http://0.0.0.0:7002/collect/carro')
+      .get(process.env.APP_URL + '/collect/' + what)
       .then(() => {
         // enable next collect button
-        this.statusCarro = true;
+        if (what == 'marca') {
+          this.statusMarca = true;
+        } else if (what == 'carro') {
+          this.statusCarro = true;
+        } else if (what == 'detalhe') {
+          this.statusDetalhe = true;
+        }
+
         // inform stop collecting
         EventBus.$emit('collect-stop');
       })
@@ -92,32 +79,10 @@ export default {
         EventBus.$emit('collect-stop');
       })
     },
-    collectDetalhe(event) {
-      // disable button
-      event.target.disabled = true;
-      // inform start collecting
-      EventBus.$emit('collect-start');
 
-      // request 
-      axios
-      .get('http://0.0.0.0:7002/collect/detalhe')
-      .then(() => {
-        // enable next collect button
-        this.statusDetalhe = true;
-        // inform stop collecting
-        EventBus.$emit('collect-stop');
-      })
-      .catch(e => {
-        // alert error
-        alert(e)
-        // enable button
-        event.target.disabled = false;
-        // inform stop collecting
-        EventBus.$emit('collect-stop');
-      })
-    },
+    // copy sql of collected data to clipboard
     copySqlToClipboard() {
-      alert('copiado')
+      window.open(process.env.APP_URL + "/dumping/dbmysql?startingId=0", "_blank");    
     }
   }
 }

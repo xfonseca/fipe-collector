@@ -7,26 +7,19 @@
           <td class="brand"><b>GERAL</b></td>
           <td class="status">
             <div>
-              <div class="status-car" v-bind:style="{ width: statusCarWidth + '%' }"> <span>{{statusCarWidth}}% modelo</span> </div>
-              <div class="status-detail" v-bind:style="{ width: statusCarDetail + '%' }"> <span>{{statusCarDetail}}% detalhe</span> </div>
+              <div class="status-brand" v-bind:style="{ width: statusGeralMarca + '%' }"> <span>{{statusGeralMarca}}% marca</span> </div>
+              <div class="status-car" v-bind:style="{ width: statusGeralCarro + '%' }"> <span>{{statusGeralCarro}}% carro</span> </div>
+              <div class="status-detail" v-bind:style="{ width: statusGeralDetalhe + '%' }"> <span>{{statusGeralDetalhe}}% detalhe</span> </div>
             </div>
           </td>
         </tr>
-        <tr>
-          <td class="brand">Fiat</td>
+        <tr v-bind:key="marcaIndex" v-for="(marca, marcaIndex) in statusMarca">
+          <td class="brand">{{marca.marca_nome}}</td>
           <td class="status">
             <div>
-              <div class="status-car" v-bind:style="{ width: statusCarWidth + '%' }"> <span>{{statusCarWidth}}% modelo</span> </div>
-              <div class="status-detail" v-bind:style="{ width: statusCarDetail + '%' }"> <span>{{statusCarDetail}}% detalhe</span> </div>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td class="brand">Fiat</td>
-          <td class="status">
-            <div>
-              <div class="status-car" v-bind:style="{ width: statusCarWidth + '%' }"> <span>{{statusCarWidth}}% modelo</span> </div>
-              <div class="status-detail" v-bind:style="{ width: statusCarDetail + '%' }"> <span>{{statusCarDetail}}% detalhe</span> </div>
+              <div class="status-brand" v-bind:style="{ width: '100%' }"> <span>{{statusGeralMarca}}% marca</span> </div>
+              <div class="status-car" v-bind:style="{ width: marca.status_carro + '%' }"> <span>{{marca.status_carro}}% carro</span> </div>
+              <div class="status-detail" v-bind:style="{ width: marca.status_detalhe + '%' }"> <span>{{marca.status_detalhe}}% detalhe</span> </div>
             </div>
           </td>
         </tr>
@@ -37,6 +30,7 @@
 
 <script>
 import { EventBus } from '../event-bus.js';
+import axios from 'axios';
 
 export default {
   name: 'Status',
@@ -46,6 +40,10 @@ export default {
       statusCarDetail: '30',
       showStatus: false,
       isCollecting: false,
+      statusGeralMarca: 100,
+      statusGeralCarro: 0,
+      statusGeralDetalhe: 0,
+      statusMarca: [],
     }
   },
   methods: {
@@ -54,33 +52,49 @@ export default {
       if (this.isCollecting == false) {
         // inform that now we are updating
         this.isCollecting = true;
+
         // request status for the first time
-        this.getStatus();
+        this.setStatus();
         
         // keep updating status every 3 seconds
         var keepUpdating = setInterval(function() {
           // request status
-          this.getStatus();
+          this.setStatus();
 
           // if it is not updating anymore, clear interval
           if (this.isCollecting == false) {
             clearInterval(keepUpdating);
           }
-        }.bind(this), 3000);
+        }.bind(this), 2000);
       }
     },
-    getStatus() {
+    setStatus() {
       // request status
-      alert('b');
+      console.log('updating status');
+
+      // request 
+      axios
+      .get(process.env.APP_URL + '/status/collect')
+      .then(result => {
+        this.statusGeralCarro = result.data.data.geral.carro
+        this.statusGeralDetalhe = result.data.data.geral.detalhe
+        this.statusMarca = result.data.data.marca
+      })
+      .catch(e => {
+        // alert error
+        console.log(e)
+      })
     }
   },
   created() {
     EventBus.$on('collect-start', function () {
+      console.log('collect start');
       // when the collect starts: show status div and start to update status
       this.updateStatus();
       this.showStatus = true;
     }.bind(this));
     EventBus.$on('collect-stop', function () {
+      console.log('collect stop');
       // when the collect stops: stop to update status
       this.isCollecting = false;
     }.bind(this))
@@ -101,10 +115,10 @@ export default {
     text-align: left;
   }
   table tbody tr {
-    height: 40px;
+    height: 60px;
   }
   table tbody tr.general {
-    height: 90px;
+    height: 110px;
   }
   table td.brand {
     width: 20%;
@@ -113,7 +127,7 @@ export default {
     width: 80%;
     font-size: 11px;
     font-weight: bold;
-    color: #ffffff;
+    color: #FFF;
   }
   table tbody tr.general td.status {
     font-size: 18px;
@@ -121,20 +135,28 @@ export default {
   table tbody td.status span {
     margin-left: 5px;
   }
+  table tbody td.status .status-brand {
+    background-color: #2302f6;
+    height: 15px;
+  }
   table tbody td.status .status-car {
-    background-color: blueviolet;
+    background-color: #7b67f9;
     height: 15px;
   }
   table tbody td.status .status-detail {
-    background-color: yellowgreen;
+    background-color: #d3ccfd;
     height: 15px;
   }
+  table tbody tr.general td.status .status-brand {
+    background-color: #2302f6;
+    height: 25px;
+  }
   table tbody tr.general td.status .status-car {
-    background-color: blueviolet;
+    background-color: #7b67f9;
     height: 25px;
   }
   table tbody tr.general td.status .status-detail {
-    background-color: yellowgreen;
+    background-color: #d3ccfd;
     height: 25px;
   }
 </style>
