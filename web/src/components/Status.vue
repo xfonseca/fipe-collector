@@ -1,5 +1,5 @@
 <template>
-  <div id="status">
+  <div id="status" v-if="showStatus">
     <h3>STATUS</h3>
     <table>
       <tbody>
@@ -36,13 +36,54 @@
 </template>
 
 <script>
+import { EventBus } from '../event-bus.js';
+
 export default {
   name: 'Status',
   data: function() {
     return {
       statusCarWidth: '80',
       statusCarDetail: '30',
+      showStatus: false,
+      isCollecting: false,
     }
+  },
+  methods: {
+    updateStatus() {
+      // check if is not already updating
+      if (this.isCollecting == false) {
+        // inform that now we are updating
+        this.isCollecting = true;
+        // request status for the first time
+        this.getStatus();
+        
+        // keep updating status every 3 seconds
+        var keepUpdating = setInterval(function() {
+          // request status
+          this.getStatus();
+
+          // if it is not updating anymore, clear interval
+          if (this.isCollecting == false) {
+            clearInterval(keepUpdating);
+          }
+        }.bind(this), 3000);
+      }
+    },
+    getStatus() {
+      // request status
+      alert('b');
+    }
+  },
+  created() {
+    EventBus.$on('collect-start', function () {
+      // when the collect starts: show status div and start to update status
+      this.updateStatus();
+      this.showStatus = true;
+    }.bind(this));
+    EventBus.$on('collect-stop', function () {
+      // when the collect stops: stop to update status
+      this.isCollecting = false;
+    }.bind(this))
   }
 }
 </script>
