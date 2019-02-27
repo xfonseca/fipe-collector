@@ -1,8 +1,8 @@
-from flask import Flask, Response, json, Blueprint, render_template
-from migration.controllers import migration
-from collect.controllers import collect
-from status.controllers import status
-from dumping.controllers import dumping
+from flask import Flask, Response, json, Blueprint, render_template, send_from_directory
+from modules.migration.controllers import migration
+from modules.collect.controllers import collect
+from modules.status.controllers import status
+from modules.dumping.controllers import dumping
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from flask_cors import CORS
@@ -10,7 +10,7 @@ import os
 import logging
 import sentry_sdk
 
-app = Flask(__name__, template_folder='web')
+app = Flask(__name__, template_folder='web', static_url_path='')
 CORS(app)
 
 # Sentry
@@ -23,11 +23,14 @@ sentry_sdk.init(
     integrations=[FlaskIntegration()]
 )
 
-# WEB
+# Client index.html
 @app.route('/')
-def index():
+def web():
     return render_template("index.html")
-
+# Client static
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('web/static', path)
 
 # MODULES
 app.register_blueprint(migration, url_prefix="/api/migration")
@@ -62,11 +65,5 @@ def handler_not_found(error):
     data = json.dumps({"message": "Internal server error!"})
     return Response(data, status=500, mimetype="application/json")
 
-
-# ENV
-debug = os.environ["APP_DEBUG"]
-host = os.environ["APP_HOST"]
-port = os.environ["APP_PORT"]
-
-# RUN
-app.run(debug=debug, host=host, port=port)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')

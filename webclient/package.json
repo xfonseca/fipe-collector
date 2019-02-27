@@ -2,7 +2,7 @@
   "name": "web",
   "version": "1.0.0",
   "description": "A Vue.js project",
-  "author": "Vitor Fonseca <vitor.fonseca@amplitarget.com.br>",
+  "author": "Vitor Fonseca <sfz.vitor@gmail.com>",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",

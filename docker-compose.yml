@@ -3,37 +3,22 @@ version: "3"
 services:
 
   app:
-    restart: always
-    build:
-      context: .
-      dockerfile: docker/dockerfile-python-dev
-    volumes:
-      - ./:/app
-      - ./web/dist:/app/app/web
-      - ./web/dist/static:/app/app/static
+    build: .
+    ports:
+      - "7002:5000"
     environment:
-      APP_DEBUG: "True"
-      APP_HOST: "0.0.0.0"
-      APP_PORT: "6002"
+      PORT: "5000"
       MYSQL_HOST: mysql
       MYSQL_DATABASE: mydb
       MYSQL_USER: myuser
       MYSQL_PASSWORD: q1w2e3r4
       SENTRY_DSN: "https://054e033a6540492099dcd8ee5e8e339a@sentry.io/1392860"
+    volumes:
+      - ./webapp:/opt/webapp
+    depends_on:
+      - mysql
     networks:
       - all
-
-  nginx:
-    image: "nginx:1.13.5"
-    ports:
-      - "7002:80"
-    volumes:
-      - ./:/app
-      - ./docker/conf.d:/etc/nginx/conf.d
-    depends_on:
-      - app
-    networks:
-      - all  
 
   mysql:
     image: mysql:5.7
