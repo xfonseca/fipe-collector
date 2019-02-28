@@ -1,6 +1,6 @@
 .DS_Store
 node_modules/
-/dist/
+# /dist/ we deploy it already built
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
