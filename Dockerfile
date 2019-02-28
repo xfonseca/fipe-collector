@@ -2,20 +2,19 @@
 FROM python:3.6
 
 # Add send requirements to container
-ADD ./webapp/requirements.txt /tmp/requirements.txt
-
-# Update pip
-RUN pip install --upgrade pip
-
-# Install requirements
-RUN pip install --no-cache-dir -q -r /tmp/requirements.txt
-
+ADD ./requirements.txt /tmp/requirements.txt
 # Add app.py
 ADD ./app.py /opt/app.py
 # Add backend code
 ADD ./webapp /opt/webapp/
 # Add frontend code (only built)
 ADD ./webclient/dist /opt/webclient/ 
+
+# Update pip
+RUN pip install --upgrade pip
+
+# Install requirements
+RUN pip install --no-cache-dir -q -r /tmp/requirements.txt
 
 # Set workdir
 WORKDIR /opt
