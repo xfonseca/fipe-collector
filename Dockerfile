@@ -10,9 +10,15 @@ RUN pip install --upgrade pip
 # Install requirements
 RUN pip install --no-cache-dir -q -r /tmp/requirements.txt
 
-# Add our code
+# Add app.py
+ADD ./app.py /opt/app.py
+# Add backend code
 ADD ./webapp /opt/webapp/
-WORKDIR /opt/webapp
+# Add frontend code (only built)
+ADD ./webclient/dist /opt/webclient/ 
+
+# Set workdir
+WORKDIR /opt
 
 # Expose is NOT supported by Heroku
 # EXPOSE 5000 		

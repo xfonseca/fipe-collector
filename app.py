@@ -1,8 +1,8 @@
 from flask import Flask, Response, json, Blueprint, render_template, send_from_directory
-from modules.migration.controllers import migration
-from modules.collect.controllers import collect
-from modules.status.controllers import status
-from modules.dumping.controllers import dumping
+from webapp.migration.controllers import migration
+from webapp.collect.controllers import collect
+from webapp.status.controllers import status
+from webapp.dumping.controllers import dumping
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from flask_cors import CORS
@@ -10,7 +10,7 @@ import os
 import logging
 import sentry_sdk
 
-app = Flask(__name__, template_folder='web', static_url_path='')
+app = Flask(__name__, template_folder='webclient', static_url_path='')
 CORS(app)
 
 # Sentry
@@ -30,7 +30,7 @@ def web():
 # Client static
 @app.route('/static/<path:path>')
 def send_static(path):
-    return send_from_directory('web/static', path)
+    return send_from_directory('webclient/static', path)
 
 # MODULES
 app.register_blueprint(migration, url_prefix="/api/migration")
