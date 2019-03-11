@@ -12,7 +12,7 @@ services:
       MYSQL_DATABASE: mydb
       MYSQL_USER: myuser
       MYSQL_PASSWORD: q1w2e3r4
-      SENTRY_DSN: "https://054e033a6540492099dcd8ee5e8e339a@sentry.io/1392860"
+      SENTRY_DSN: ""
     volumes:
       - ./webapp:/opt/webapp
     depends_on:
