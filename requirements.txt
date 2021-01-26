@@ -1,6 +1,6 @@
 flask==1.0.2
 flask_restful==0.3.6
-mysql-connector==2.1.6
+mysql-connector==2.1.7
 pytz==2018.3
 requests[security]==2.9.1
 sentry-sdk[flask]==0.7.2

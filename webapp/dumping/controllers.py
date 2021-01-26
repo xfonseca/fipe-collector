@@ -36,7 +36,7 @@ def dbmysql():
         # Get status data
         cursorSelectCarro = g.mydb.cursor()
         cursorSelectCarro.execute(" \
-            SELECT api_carro.id, api_marca.nome, api_carro.nome \
+            SELECT api_carro.id, api_marca.nome, api_carro.nome, api_marca.id \
               FROM api_marca \
               JOIN api_carro ON api_carro.marca_id = api_marca.id \
              WHERE api_carro.id > {};".format(startingId) \
@@ -44,7 +44,7 @@ def dbmysql():
         myresult = cursorSelectCarro.fetchall()
 
         # Var dump
-        stringDump = "INSERT INTO table_name (campo1, campo2, campo3) VALUES "
+        stringDump = "INSERT INTO table_name (campo1, campo2, campo3, campo4) VALUES "
 
         # Format result
         for carro in myresult:
@@ -52,9 +52,10 @@ def dbmysql():
             carroId = str(carro[0])
             carroMarca = str(carro[1]).replace("'", "\\'")
             carroModelo = str(carro[2]).replace("'", "\\'")
+            marcaId = str(carro[3]).replace("'", "\\'")
 
             # Concatenate
-            stringDump += "(" + carroId + ", '" + carroMarca  + "', '" + carroModelo + "'),"
+            stringDump += "(" + carroId + ", '" + carroMarca  + "', '" + carroModelo + "', " + marcaId + "),"
 
         # Return data
         # returnData = json.dumps({ "data": stringDump, "message": "Status data are at data property" })
